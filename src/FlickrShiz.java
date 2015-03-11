@@ -7,13 +7,13 @@ public class FlickrShiz extends PApplet {
 	private static final long serialVersionUID = 1L;
 	PImage source;
 	PGraphics canvas;
-	int segmentWidth = 120;
-	int segmentHeight = 120;
+	int segmentWidth = 60;
+	int segmentHeight = 60;
 	int currentGridpoint = 0;
 	ArrayList<PVector> gridPoints = new ArrayList<PVector>();
 
 	public void setup() {
-		this.size(1920, 1080);
+		this.size(2560, 1440);
 		this.background(0);
 
 		canvas = this.createGraphics(this.width, this.height);
@@ -21,7 +21,7 @@ public class FlickrShiz extends PApplet {
 		canvas.background(0);
 		canvas.endDraw();
 
-		this.source = loadImage("data/FreeGreatPicture.com-19439-hd-color-background-wallpaper.jpg");
+		this.source = loadImage("data/olivia-wilde-portrait_00439084.jpg");
 		this.source.resize(width, height);
 
 		for (int ix = 0; ix < source.width + this.segmentWidth; ix += segmentWidth) {
@@ -37,6 +37,10 @@ public class FlickrShiz extends PApplet {
 			PVector point = gridPoints.get(currentGridpoint);
 			render((int) point.x, (int) point.y);
 			currentGridpoint++;
+		} else {
+			long unixTime = System.currentTimeMillis() / 1000L;
+			canvas.save("output/" + unixTime + ".png");
+			this.noLoop();
 		}
 		image(canvas, 0, 0);
 	}
@@ -57,9 +61,9 @@ public class FlickrShiz extends PApplet {
 		Tile tile = new Tile(colors, this.segmentWidth, this.segmentHeight);
 		canvas.beginDraw();
 		canvas.pushMatrix();
-		canvas.translate(_x - 60, _y);
-		canvas.image(tile.slice1, 0, 0, 120, 120);
-		canvas.image(tile.slice2, 60, 0, 120, 120);
+		canvas.translate(_x - this.segmentWidth / 2, _y);
+		canvas.image(tile.slice1, 0, 0, this.segmentWidth, this.segmentHeight);
+		canvas.image(tile.slice2, this.segmentWidth / 2, 0, this.segmentWidth, this.segmentHeight);
 		canvas.popMatrix();
 		canvas.endDraw();
 	}
