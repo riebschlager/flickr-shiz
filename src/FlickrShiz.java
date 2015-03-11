@@ -21,7 +21,7 @@ public class FlickrShiz extends PApplet {
 		canvas.background(0);
 		canvas.endDraw();
 
-		this.source = loadImage("data/abstract-colour-cool-HD-wallpaper.jpg");
+		this.source = loadImage("data/FreeGreatPicture.com-19439-hd-color-background-wallpaper.jpg");
 		this.source.resize(width, height);
 
 		for (int ix = 0; ix < source.width + this.segmentWidth; ix += segmentWidth) {
