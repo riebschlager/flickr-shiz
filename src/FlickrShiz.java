@@ -7,13 +7,13 @@ public class FlickrShiz extends PApplet {
 	private static final long serialVersionUID = 1L;
 	PImage source;
 	PGraphics canvas;
-	int segmentWidth = 60;
-	int segmentHeight = 60;
+	int segmentWidth = 192;
+	int segmentHeight = 192;
 	int currentGridpoint = 0;
 	ArrayList<PVector> gridPoints = new ArrayList<PVector>();
 
 	public void setup() {
-		this.size(2560, 1440);
+		this.size(1920, 1080);
 		this.background(0);
 
 		canvas = this.createGraphics(this.width, this.height);
@@ -21,7 +21,7 @@ public class FlickrShiz extends PApplet {
 		canvas.background(0);
 		canvas.endDraw();
 
-		this.source = loadImage("data/olivia-wilde-portrait_00439084.jpg");
+		this.source = loadImage("data/Wallpapers-room_com___Annas_Nebula_WS_by_casperium_1680x1050.jpg");
 		this.source.resize(width, height);
 
 		for (int ix = 0; ix < source.width + this.segmentWidth; ix += segmentWidth) {
@@ -61,9 +61,8 @@ public class FlickrShiz extends PApplet {
 		Tile tile = new Tile(colors, this.segmentWidth, this.segmentHeight);
 		canvas.beginDraw();
 		canvas.pushMatrix();
-		canvas.translate(_x - this.segmentWidth / 2, _y);
-		canvas.image(tile.slice1, 0, 0, this.segmentWidth, this.segmentHeight);
-		canvas.image(tile.slice2, this.segmentWidth / 2, 0, this.segmentWidth, this.segmentHeight);
+		canvas.translate(_x, _y);
+		canvas.image(tile.canvas, 0, 0, this.segmentWidth, this.segmentHeight);
 		canvas.popMatrix();
 		canvas.endDraw();
 	}
@@ -81,13 +80,16 @@ public class FlickrShiz extends PApplet {
 		ArrayList<String> tineyeUrls = new ArrayList<String>();
 		int width;
 		int height;
-		PImage slice1;
-		PImage slice2;
+		PImage[] slices = new PImage[8];
+		PGraphics canvas;
 
 		Tile(int[] colors, int _width, int _height) {
 
 			this.width = _width;
 			this.height = _height;
+			this.canvas = createGraphics(segmentWidth, segmentHeight);
+			this.canvas.beginDraw();
+			this.canvas.endDraw();
 
 			String url = "http://labs.tineye.com/multicolr/rest/color_search/?";
 			String params = "return_metadata=<serverID%2f><photoID%2f><farmID%2f><imageHeight%2f><imageWidth%2f>";
@@ -115,37 +117,51 @@ public class FlickrShiz extends PApplet {
 				String secret = filename.split("_")[1];
 				String imageExt = filename.split("\\.")[1];
 				String flickrUrl = "https://farm" + farmID + ".staticflickr.com/" + serverID + "/" + photoID + "_" + secret + "." + imageExt;
-				String tineyeUrl = "http://img.tineye.com/flickr-images/?size=300&filepath=labs-flickr-public/images/" + filename;
+				String tineyeUrl = "http://img.tineye.com/flickr-images/?size=800&filepath=labs-flickr-public/images/" + filename;
 				this.flickrUrls.add(flickrUrl);
 				this.tineyeUrls.add(tineyeUrl);
 			}
 
-			renderSlice1();
-			renderSlice2();
+			PVector[] p = new PVector[9];
+			p[0] = new PVector(0, 0);
+			p[1] = new PVector(this.width / 2, 0);
+			p[2] = new PVector(this.width, 0);
+			p[3] = new PVector(0, this.height / 2);
+			p[4] = new PVector(this.width / 2, this.height / 2);
+			p[5] = new PVector(this.width, this.height / 2);
+			p[6] = new PVector(0, this.height);
+			p[7] = new PVector(this.width / 2, this.height);
+			p[8] = new PVector(this.width, this.height);
+
+			slices[0] = renderSlice(p[0].x, p[0].y, p[1].x, p[1].y, p[3].x, p[3].y);
+			slices[1] = renderSlice(p[3].x, p[3].y, p[1].x, p[1].y, p[4].x, p[4].y);
+			slices[2] = renderSlice(p[1].x, p[1].y, p[2].x, p[2].y, p[5].x, p[5].y);
+			slices[3] = renderSlice(p[1].x, p[1].y, p[4].x, p[4].y, p[5].x, p[5].y);
+			slices[4] = renderSlice(p[3].x, p[3].y, p[4].x, p[4].y, p[7].x, p[7].y);
+			slices[5] = renderSlice(p[3].x, p[3].y, p[6].x, p[6].y, p[7].x, p[7].y);
+			slices[6] = renderSlice(p[4].x, p[4].y, p[5].x, p[5].y, p[7].x, p[7].y);
+			slices[7] = renderSlice(p[5].x, p[5].y, p[8].x, p[8].y, p[7].x, p[7].y);
+
+			this.canvas.beginDraw();
+			for (int i = 0; i < slices.length; i++) {
+				this.canvas.image(slices[i], 0, 0);
+			}
+			this.canvas.endDraw();
 		}
 
-		void renderSlice1() {
+		PImage renderSlice(float x1, float y1, float x2, float y2, float x3, float y3) {
 			int i = floor(random(10));
-			PImage img = loadImage(this.tineyeUrls.get(i)).get(0, 0, this.width, this.height);
+			PImage img = loadImage(this.tineyeUrls.get(i));
+			img.resize((int) (img.width * 1.5), (int) (img.height * 1.5));
+			img = img.get(0, 0, this.width, this.height);
 			PGraphics mask = createGraphics(this.width, this.height);
 			mask.beginDraw();
 			mask.noStroke();
-			mask.triangle(0, this.height, this.width / 2, 0, this.width, this.height);
+			mask.triangle(x1, y1, x2, y2, x3, y3);
 			mask.endDraw();
 			img.mask(mask);
-			this.slice1 = img;
+			return img;
 		}
 
-		void renderSlice2() {
-			int i = floor(random(10));
-			PImage img = loadImage(this.tineyeUrls.get(i)).get(0, 0, this.width, this.height);
-			PGraphics mask = createGraphics(this.width, this.height);
-			mask.beginDraw();
-			mask.noStroke();
-			mask.triangle(0, 0, this.width / 2, this.height, this.width, 0);
-			mask.endDraw();
-			img.mask(mask);
-			this.slice2 = img;
-		}
 	}
 }
